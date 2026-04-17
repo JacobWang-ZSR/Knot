@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+Feature.md
+AGENTS.md
+config.json
+config/config.json
+data/passwords.jason

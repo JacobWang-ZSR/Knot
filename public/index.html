@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knot Password Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Knot Password Manager</h1>
+    <div id="header-actions">
+      <button id="change-password-btn" title="Change password">🔒</button>
+      <button id="logout-btn" title="Logout" aria-label="Logout">
+        <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 21V3h10v18H4zM6 19h6V5H6v14z"/>
+          <path d="M15 17l4-5-4-5v3H9v4h6v3z"/>
+        </svg>
+      </button>
+      <button id="open-config" title="Select JSON">📁</button>
+      <button id="theme-toggle" title="Toggle theme">🌓</button>
+    </div>
+  </header>
+
+  <section id="login-section">
+    <h2>Enter Password</h2>
+    <p class="login-hint">Default password: 123456</p>
+    <form id="login-form">
+      <input type="password" id="login-password" placeholder="Enter password" required>
+      <button type="submit">Login</button>
+    </form>
+    <p id="login-error" style="color: red; display: none;">Invalid password</p>
+  </section>
+
+  <main>
+
+    <section id="change-password-section" style="display: none;">
+      <h2>Change Password</h2>
+      <form id="change-password-form">
+        <label for="old-password">Old Password:</label>
+        <input type="password" id="old-password" required>
+        <label for="new-password">New Password:</label>
+        <input type="password" id="new-password" required>
+        <label for="confirm-password">Confirm New Password:</label>
+        <input type="password" id="confirm-password" required>
+        <button type="submit">Change</button>
+        <button type="button" id="cancel-change-password">Cancel</button>
+      </form>
+      <p id="change-error" style="color: red; display: none;"></p>
+    </section>
+
+    <section id="config-section" style="display: none;">
+      <h2>Settings</h2>
+      <label for="json-path">JSON File Path:</label>
+      <input type="text" id="json-path" placeholder="/app/passwords.jason">
+      <div class="config-buttons">
+        <button id="browse-btn">Browse</button>
+        <button id="save-config">Confirm</button>
+        <button id="cancel-config" type="button">Cancel</button>
+      </div>
+      <div id="file-browser" style="display: none;">
+        <div id="current-dir"></div>
+        <ul id="file-list"></ul>
+        <button id="close-browser" type="button">Close</button>
+      </div>
+    </section>
+
+    <section id="search-section">
+      <input type="text" id="search-input" placeholder="Search passwords...">
+      <select id="search-type">
+        <option value="targetName">Target</option>
+        <option value="keyName">Username</option>
+        <option value="targetUrl">URL</option>
+      </select>
+      <button id="toggle-add">Add New Password</button>
+    </section>
+
+    <section id="passwords-container">
+      <!-- Password blocks will be inserted here -->
+    </section>
+
+    <section id="add-section" style="display: none;">
+      <h2>Add New Password</h2>
+      <form id="add-form">
+        <input type="text" id="keyName" placeholder="Username" required>
+        <input type="password" id="keyValue" placeholder="Password" required>
+        <input type="text" id="targetName" placeholder="Target Scenario" required>
+        <input type="text" id="targetUrl" placeholder="Target Address">
+        <div id="other-fields">
+          <!-- Dynamic Other_x fields -->
+        </div>
+        <button type="button" id="add-other">Add Extra Field</button>
+        <button type="submit">Add Password</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
