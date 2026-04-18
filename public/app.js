@@ -263,10 +263,11 @@ document.addEventListener('DOMContentLoaded', () => {
           };
 
           for (let i = 1; i <= otherCount; i++) {
-            const key = bottom.querySelector(`#edit-other-key-${index}-${i}`)?.value;
+            const rawKey = bottom.querySelector(`#edit-other-key-${index}-${i}`)?.value?.trim();
             const value = bottom.querySelector(`#edit-other-value-${index}-${i}`)?.value;
-            if (key && value) {
-              newPwd[key] = value;
+            if (rawKey && value) {
+              const normalizedKey = rawKey.startsWith('Other_') ? rawKey : `Other_${rawKey}`;
+              newPwd[normalizedKey] = value;
             }
           }
 
