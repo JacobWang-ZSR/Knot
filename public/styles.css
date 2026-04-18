@@ -357,6 +357,8 @@ body.dark .password-block-bottom {
 .password-block-bottom p {
   margin: 0 0 6px;
   line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .password-block-bottom p:last-child {
