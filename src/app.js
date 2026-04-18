@@ -97,6 +97,42 @@ app.put('/passwords/:index', async (req, res) => {
   }
 });
 
+// DELETE /passwords/:index - delete password
+app.delete('/passwords/:index', async (req, res) => {
+  try {
+    const index = Number(req.params.index);
+    if (Number.isNaN(index)) {
+      return res.status(400).json({ error: 'Invalid index' });
+    }
+
+    let passwords = [];
+    try {
+      const data = await fs.readFile(JSON_PATH, 'utf8');
+      passwords = JSON.parse(data);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        return res.status(404).json({ error: 'Password file not found' });
+      }
+      return res.status(500).json({ error: 'Failed to read passwords' });
+    }
+
+    if (!Array.isArray(passwords)) {
+      return res.status(500).json({ error: 'Invalid password data format' });
+    }
+
+    if (index < 0 || index >= passwords.length) {
+      return res.status(404).json({ error: 'Password not found' });
+    }
+
+    passwords.splice(index, 1);
+    await fs.writeFile(JSON_PATH, JSON.stringify(passwords, null, 2));
+    res.status(204).send();
+  } catch (err) {
+    console.error('Error deleting password:', err);
+    res.status(500).json({ error: 'Failed to delete password' });
+  }
+});
+
 // GET /config - get current config
 app.get('/config', (req, res) => {
   res.json({ jsonPath: JSON_PATH });

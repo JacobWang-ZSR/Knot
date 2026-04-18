@@ -221,12 +221,43 @@ body.dark .password-block-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 6px;
 }
 
 .edit-btn {
-  padding: 2px 5px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn:hover {
+  background-color: #0056b3;
+}
+
+.action-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.delete-btn {
+  padding: 2px 6px;
   font-size: 12px;
   cursor: pointer;
+  background-color: #d9534f;
+}
+
+.delete-btn:hover {
+  background-color: #c9302c;
 }
 
 .edit-form {

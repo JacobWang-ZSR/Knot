@@ -172,7 +172,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="password-block-top">
           <div class="top-content">
             <p class="target-name">${pwd.targetName}</p>
-            <button class="edit-btn" data-index="${originalIndex}">Edit</button>
+            <div class="card-actions">
+              <button class="edit-btn" data-index="${originalIndex}" aria-label="Edit password">
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l9.06-9.06.92.92L5.92 19.58z"/>
+                  <path d="M20.7 7.04c.39-.39.39-1.02 0-1.41L18.37 3.3a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.82-1.84z"/>
+                </svg>
+              </button>
+              <button class="delete-btn" data-index="${originalIndex}" aria-label="Delete password">x</button>
+            </div>
           </div>
         </div>
         <div class="password-block-bottom">
@@ -201,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.edit-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const index = parseInt(e.target.dataset.index);
+        const index = Number(e.currentTarget.dataset.index);
         const pwd = passwords[index];
         const block = e.target.closest('.password-block');
         const bottom = block.querySelector('.password-block-bottom');
@@ -273,6 +281,49 @@ document.addEventListener('DOMContentLoaded', () => {
           // Reattach listeners
           attachListeners();
         });
+      });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const index = Number(e.currentTarget.dataset.index);
+        if (!Number.isInteger(index)) {
+          alert('Delete failed: invalid record index.');
+          return;
+        }
+
+        const pwd = passwords[index];
+        if (!pwd) {
+          alert('Password record not found.');
+          return;
+        }
+
+        const confirmed = confirm(`Delete password for "${pwd.targetName}"?`);
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/passwords/${index}`, {
+            method: 'DELETE'
+          });
+
+          if (response.ok) {
+            loadPasswords();
+          } else {
+            const rawBody = await response.text();
+            let message = '';
+            try {
+              message = rawBody ? JSON.parse(rawBody).error : '';
+            } catch (_err) {
+              message = rawBody;
+            }
+            alert(`Delete failed (${response.status}): ${message || 'Unknown server error'}`);
+          }
+        } catch (error) {
+          console.error('Error deleting password:', error);
+          alert(`Error deleting password: ${error.message || 'Network error'}`);
+        }
       });
     });
   }
