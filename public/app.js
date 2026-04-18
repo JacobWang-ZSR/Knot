@@ -179,7 +179,17 @@ document.addEventListener('DOMContentLoaded', () => {
                   <path d="M20.7 7.04c.39-.39.39-1.02 0-1.41L18.37 3.3a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.82-1.84z"/>
                 </svg>
               </button>
-              <button class="delete-btn" data-index="${originalIndex}" aria-label="Delete password">x</button>
+              <button class="delete-btn" data-index="${originalIndex}" aria-label="Delete password">
+                <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M7 21c-.55 0-1-.45-1-1V7h12v13c0 .55-.45 1-1 1H7zm2-3h2V10H9v8zm4 0h2V10h-2v8z"/>
+                  <path d="M15.5 4l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+              </button>
+              <div class="delete-confirm">
+                <span class="delete-confirm-text">Confirm?</span>
+                <button class="cancel-delete-btn" type="button" data-index="${originalIndex}">No</button>
+                <button class="confirm-delete-btn" type="button" data-index="${originalIndex}">Yes</button>
+              </div>
             </div>
           </div>
         </div>
@@ -285,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', (e) => {
         const index = Number(e.currentTarget.dataset.index);
         if (!Number.isInteger(index)) {
           alert('Delete failed: invalid record index.');
@@ -298,11 +308,30 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        const confirmed = confirm(`Delete password for "${pwd.targetName}"?`);
-        if (!confirmed) {
+        const currentTop = e.currentTarget.closest('.password-block-top');
+        document.querySelectorAll('.password-block-top.confirming-delete').forEach(top => {
+          if (top !== currentTop) {
+            top.classList.remove('confirming-delete');
+          }
+        });
+        currentTop.classList.toggle('confirming-delete');
+      });
+    });
+
+    document.querySelectorAll('.cancel-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const top = e.currentTarget.closest('.password-block-top');
+        top.classList.remove('confirming-delete');
+      });
+    });
+
+    document.querySelectorAll('.confirm-delete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const index = Number(e.currentTarget.dataset.index);
+        if (!Number.isInteger(index)) {
+          alert('Delete failed: invalid record index.');
           return;
         }
-
         try {
           const response = await fetch(`/passwords/${index}`, {
             method: 'DELETE'

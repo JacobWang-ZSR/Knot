@@ -227,6 +227,7 @@ body.dark .password-block-top {
 .card-actions {
   display: flex;
   gap: 6px;
+  align-items: center;
 }
 
 .edit-btn {
@@ -250,13 +251,61 @@ body.dark .password-block-top {
 }
 
 .delete-btn {
-  padding: 2px 6px;
-  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: #d9534f;
 }
 
 .delete-btn:hover {
+  background-color: #c9302c;
+}
+
+.delete-confirm {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.password-block-top.confirming-delete .edit-btn,
+.password-block-top.confirming-delete .delete-btn {
+  display: none;
+}
+
+.password-block-top.confirming-delete .delete-confirm {
+  display: inline-flex;
+}
+
+.delete-confirm-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cancel-delete-btn,
+.confirm-delete-btn {
+  padding: 2px 8px;
+  min-width: auto;
+  min-height: auto;
+  font-size: 12px;
+}
+
+.cancel-delete-btn {
+  background-color: #6c757d;
+}
+
+.cancel-delete-btn:hover {
+  background-color: #5a6268;
+}
+
+.confirm-delete-btn {
+  background-color: #d9534f;
+}
+
+.confirm-delete-btn:hover {
   background-color: #c9302c;
 }
 
