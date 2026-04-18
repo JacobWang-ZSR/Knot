@@ -24,6 +24,12 @@ https://docker.1ms.run
 
 sudo docker compose up -d
 
+# Local run
+
+cd D:\Workspace\codex\RopeNod
+npm install
+npm start
+
 
 # quick command
 
