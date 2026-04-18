@@ -21,7 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginSection = document.getElementById('login-section');
   const loginForm = document.getElementById('login-form');
   const loginPassword = document.getElementById('login-password');
+  const rememberDevice = document.getElementById('remember-device');
   const loginError = document.getElementById('login-error');
+  const connectionWarning = document.getElementById('connection-warning');
   const changePasswordBtn = document.getElementById('change-password-btn');
   const changePasswordSection = document.getElementById('change-password-section');
   const changePasswordForm = document.getElementById('change-password-form');
@@ -36,16 +38,71 @@ document.addEventListener('DOMContentLoaded', () => {
   let passwords = [];
   let otherCount = 0;
 
-  // Check authentication
-  // if (localStorage.getItem('authenticated') !== 'true') {
-    loginSection.style.display = 'block';
-    main.style.display = 'none';
-  // } else {
-  //   loginSection.style.display = 'none';
-  //   main.style.display = 'block';
-  //   loadConfig();
-  //   loadPasswords();
-  // }
+  function showConnectionWarning(message) {
+    if (!connectionWarning) return;
+    connectionWarning.textContent = message;
+    connectionWarning.style.display = 'block';
+  }
+
+  function clearConnectionWarning() {
+    if (!connectionWarning) return;
+    connectionWarning.style.display = 'none';
+    connectionWarning.textContent = '';
+  }
+
+  function setAuthUI(authenticated) {
+    if (authenticated) {
+      loginSection.style.display = 'none';
+      main.style.display = 'block';
+      loginError.style.display = 'none';
+      clearConnectionWarning();
+      loginPassword.value = '';
+    } else {
+      loginSection.style.display = 'block';
+      main.style.display = 'none';
+    }
+  }
+
+  function handleUnauthorized() {
+    setAuthUI(false);
+  }
+
+  async function apiFetch(url, options = {}) {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+      handleUnauthorized();
+      throw new Error('Unauthorized');
+    }
+    return response;
+  }
+
+  async function checkAuthStatus() {
+    try {
+      const response = await fetch('/auth/status');
+      if (!response.ok) {
+        if (response.status === 404) {
+          showConnectionWarning('连接自检：后端版本过旧（缺少 /auth/status）。请重启 Node 或 Docker 加载最新代码。');
+        } else {
+          showConnectionWarning(`连接自检失败：/auth/status 返回 ${response.status}。`);
+        }
+        setAuthUI(false);
+        return;
+      }
+
+      const result = await response.json();
+      clearConnectionWarning();
+      if (result.authenticated) {
+        setAuthUI(true);
+        await loadConfig();
+        await loadPasswords();
+      } else {
+        setAuthUI(false);
+      }
+    } catch (error) {
+      console.error('Auth status error:', error);
+      setAuthUI(false);
+    }
+  }
 
   const getDirectory = (filePath) => {
     if (!filePath) return '/';
@@ -72,22 +129,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({
+          password,
+          rememberDevice: Boolean(rememberDevice && rememberDevice.checked)
+        })
       });
       const result = await response.json();
       if (result.success) {
-        localStorage.setItem('authenticated', 'true');
-        loginSection.style.display = 'none';
-        main.style.display = 'block';
-        loadConfig();
-        loadPasswords();
-        loginError.style.display = 'none';
+        clearConnectionWarning();
+        setAuthUI(true);
+        await loadConfig();
+        await loadPasswords();
       } else {
         loginError.style.display = 'block';
       }
     } catch (error) {
       console.error('Login error:', error);
       loginError.style.display = 'block';
+      showConnectionWarning('连接自检：无法连接后端，请确认 Node 服务已启动。');
     }
   });
 
@@ -97,9 +156,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Logout button
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('authenticated');
-    location.reload();
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await fetch('/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forgetDevice: true })
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      handleUnauthorized();
+    }
   });
 
   // Change password form
@@ -114,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     try {
-      const response = await fetch('/change-password', {
+      const response = await apiFetch('/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
@@ -129,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         changeError.style.display = 'block';
       }
     } catch (error) {
+      if (error.message === 'Unauthorized') return;
       console.error('Change password error:', error);
       changeError.textContent = 'Error changing password';
       changeError.style.display = 'block';
@@ -143,20 +212,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadConfig() {
     try {
-      const response = await fetch('/config');
+      const response = await apiFetch('/config');
       const config = await response.json();
       jsonPathInput.value = config.jsonPath || '';
     } catch (error) {
+      if (error.message === 'Unauthorized') return;
       console.error('Error loading config:', error);
     }
   }
 
   async function loadPasswords() {
     try {
-      const response = await fetch('/passwords');
+      const response = await apiFetch('/passwords');
       passwords = await response.json();
       renderPasswords();
     } catch (error) {
+      if (error.message === 'Unauthorized') return;
       console.error('Error loading passwords:', error);
     }
   }
@@ -272,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           try {
-            const response = await fetch(`/passwords/${index}`, {
+            const response = await apiFetch(`/passwords/${index}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(newPwd)
@@ -283,6 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
               alert('Error updating password');
             }
           } catch (error) {
+            if (error.message === 'Unauthorized') return;
             console.error('Error:', error);
           }
         });
@@ -334,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
         try {
-          const response = await fetch(`/passwords/${index}`, {
+          const response = await apiFetch(`/passwords/${index}`, {
             method: 'DELETE'
           });
 
@@ -351,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Delete failed (${response.status}): ${message || 'Unknown server error'}`);
           }
         } catch (error) {
+          if (error.message === 'Unauthorized') return;
           console.error('Error deleting password:', error);
           alert(`Error deleting password: ${error.message || 'Network error'}`);
         }
@@ -439,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const response = await fetch('/passwords', {
+      const response = await apiFetch('/passwords', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPwd)
@@ -454,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Error adding password');
       }
     } catch (error) {
+      if (error.message === 'Unauthorized') return;
       console.error('Error:', error);
     }
   });
@@ -481,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadFiles(dir) {
     try {
-      const response = await fetch(`/files?dir=${encodeURIComponent(dir)}`);
+      const response = await apiFetch(`/files?dir=${encodeURIComponent(dir)}`);
       const data = await response.json();
       currentDir.textContent = `Current: ${data.currentDir}`;
       fileList.innerHTML = '';
@@ -517,6 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fileList.appendChild(li);
       });
     } catch (error) {
+      if (error.message === 'Unauthorized') return;
       console.error('Error loading files:', error);
       currentDir.textContent = 'Current: (error loading directory)';
       fileList.innerHTML = '';
@@ -530,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
   saveConfigBtn.addEventListener('click', async () => {
     const jsonPath = jsonPathInput.value;
     try {
-      const response = await fetch('/config', {
+      const response = await apiFetch('/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonPath })
@@ -544,10 +619,10 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Error saving config');
       }
     } catch (error) {
+      if (error.message === 'Unauthorized') return;
       console.error('Error:', error);
     }
   });
 
-  loadConfig();
-  loadPasswords();
+  checkAuthStatus();
 });

@@ -128,6 +128,31 @@ body.dark #login-section {
   border-color: #555;
 }
 
+.remember-device-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.connection-warning {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d09a00;
+  background-color: #fff3cd;
+  color: #7a5a00;
+  text-align: left;
+  font-size: 13px;
+}
+
+body.dark .connection-warning {
+  border-color: #a97f00;
+  background-color: #3b2f00;
+  color: #ffd862;
+}
+
 #change-password-section {
   max-width: 400px;
   margin: 50px auto;
