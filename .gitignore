@@ -1,6 +1,9 @@
 node_modules/
 npm-debug.log*
 
+server.out.log
+server.err.log
+
 # Local runtime data and secrets
 config.json
 config/config.json

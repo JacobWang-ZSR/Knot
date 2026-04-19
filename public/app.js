@@ -37,6 +37,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let passwords = [];
   let otherCount = 0;
+  let toastTimer = null;
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]));
+  }
+
+  function copyValue(value) {
+    const safeValue = escapeHtml(value);
+    return `<span class="copy-value" data-copy="${safeValue}" title="Click to copy" tabindex="0" role="button">${safeValue}</span>`;
+  }
+
+  function showToast(message) {
+    let toast = document.getElementById('copy-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'copy-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.classList.add('show');
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 1400);
+  }
+
+  async function copyToClipboard(value) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+      if (!document.execCommand('copy')) {
+        throw new Error('Copy command failed');
+      }
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
 
   function showConnectionWarning(message) {
     if (!connectionWarning) return;
@@ -242,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = `
         <div class="password-block-top">
           <div class="top-content">
-            <p class="target-name">${pwd.targetName}</p>
+            <p class="target-name copy-value" data-copy="${escapeHtml(pwd.targetName)}" title="Click to copy" tabindex="0" role="button">${escapeHtml(pwd.targetName)}</p>
             <div class="card-actions">
               <button class="edit-btn" data-index="${originalIndex}" aria-label="Edit password">
                 <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -265,10 +324,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         <div class="password-block-bottom">
-          <p><strong>Username:</strong> ${pwd.keyName}</p>
-          <p><strong>Password:</strong> <span class="password-value">${pwd.keyValue}</span></p>
-          ${pwd.targetUrl ? `<p><strong>Address:</strong> ${pwd.targetUrl}</p>` : ''}
-          ${Object.keys(pwd).filter(key => key.startsWith('Other_')).map(key => `<p><strong>${key}:</strong> ${pwd[key]}</p>`).join('')}
+          <p><strong>Username:</strong> ${copyValue(pwd.keyName)}</p>
+          <p><strong>Password:</strong> <span class="password-value">${copyValue(pwd.keyValue)}</span></p>
+          ${pwd.targetUrl ? `<p><strong>Address:</strong> ${copyValue(pwd.targetUrl)}</p>` : ''}
+          ${Object.keys(pwd).filter(key => key.startsWith('Other_')).map(key => `<p><strong>${escapeHtml(key)}:</strong> ${copyValue(pwd[key])}</p>`).join('')}
         </div>
       `;
 
@@ -416,6 +475,29 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  passwordsContainer.addEventListener('click', async (e) => {
+    const target = e.target.closest('.copy-value');
+    if (!target) return;
+
+    try {
+      await copyToClipboard(target.dataset.copy || target.textContent);
+      showToast('copied to clipboard');
+    } catch (error) {
+      console.error('Copy failed:', error);
+      showToast('copy failed');
+    }
+  });
+
+  passwordsContainer.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+
+    const target = e.target.closest('.copy-value');
+    if (!target) return;
+
+    e.preventDefault();
+    target.click();
+  });
 
   function filterPasswords() {
     const query = searchInput.value.toLowerCase();
