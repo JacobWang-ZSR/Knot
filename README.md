@@ -8,7 +8,7 @@ Knot is a small self-hosted password manager for personal or home-lab use. It ru
 
 - Login screen with a configurable app password
 - View password entries as cards
-- Click a masked password to reveal or hide it
+- View password values directly
 - Search by target, username, or URL
 - Add and edit password records
 - Add custom extra fields

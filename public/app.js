@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="password-block-bottom">
           <p><strong>Username:</strong> ${pwd.keyName}</p>
-          <p><strong>Password:</strong> <span class="password-value" data-index="${originalIndex}">********</span></p>
+          <p><strong>Password:</strong> <span class="password-value">${pwd.keyValue}</span></p>
           ${pwd.targetUrl ? `<p><strong>Address:</strong> ${pwd.targetUrl}</p>` : ''}
           ${Object.keys(pwd).filter(key => key.startsWith('Other_')).map(key => `<p><strong>${key}:</strong> ${pwd[key]}</p>`).join('')}
         </div>
@@ -274,18 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       block.innerHTML = html;
       passwordsContainer.appendChild(block);
-    });
-
-    document.querySelectorAll('.password-value').forEach(span => {
-      span.addEventListener('click', (e) => {
-        const index = e.target.dataset.index;
-        const pwd = passwords[index];
-        if (e.target.textContent === '********') {
-          e.target.textContent = pwd.keyValue;
-        } else {
-          e.target.textContent = '********';
-        }
-      });
     });
 
     document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -361,8 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         bottom.querySelector(`#edit-cancel-${index}`).addEventListener('click', () => {
           bottom.innerHTML = bottom.dataset.originalHtml;
-          // Reattach listeners
-          attachListeners();
         });
       });
     });
@@ -427,26 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
           console.error('Error deleting password:', error);
           alert(`Error deleting password: ${error.message || 'Network error'}`);
         }
-      });
-    });
-  }
-
-  function attachListeners() {
-    document.querySelectorAll('.password-value').forEach(span => {
-      span.addEventListener('click', (e) => {
-        const index = e.target.dataset.index;
-        const pwd = passwords[index];
-        if (e.target.textContent === '********') {
-          e.target.textContent = pwd.keyValue;
-        } else {
-          e.target.textContent = '********';
-        }
-      });
-    });
-
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        // ... same as above
       });
     });
   }

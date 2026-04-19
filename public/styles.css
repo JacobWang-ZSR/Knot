@@ -366,7 +366,6 @@ body.dark .password-block-bottom {
 }
 
 .password-value {
-  cursor: pointer;
   user-select: text;
   -webkit-user-select: text;
 }
