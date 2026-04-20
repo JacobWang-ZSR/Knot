@@ -4,7 +4,8 @@
   "description": "Simple password manager",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "test": "node tests/search-filter.test.js"
   },
   "dependencies": {
     "express": "^4.18.2"

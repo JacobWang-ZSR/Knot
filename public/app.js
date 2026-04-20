@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await apiFetch('/passwords');
       passwords = await response.json();
-      renderPasswords();
+      renderFilteredPasswords();
     } catch (error) {
       if (error.message === 'Unauthorized') return;
       console.error('Error loading passwords:', error);
@@ -499,15 +499,21 @@ document.addEventListener('DOMContentLoaded', () => {
     target.click();
   });
 
-  function filterPasswords() {
-    const query = searchInput.value.toLowerCase();
+  function matchesCurrentSearch(pwd) {
+    const query = searchInput.value.trim().toLowerCase();
+    if (!query) return true;
+
     const type = searchType.value;
-    const filtered = passwords.filter(pwd => pwd[type].toLowerCase().includes(query));
+    return String(pwd[type] || '').toLowerCase().includes(query);
+  }
+
+  function renderFilteredPasswords() {
+    const filtered = passwords.filter(matchesCurrentSearch);
     renderPasswords(filtered);
   }
 
-  searchInput.addEventListener('input', filterPasswords);
-  searchType.addEventListener('change', filterPasswords);
+  searchInput.addEventListener('input', renderFilteredPasswords);
+  searchType.addEventListener('change', renderFilteredPasswords);
 
   function scrollToElement(element) {
     const start = window.pageYOffset;
