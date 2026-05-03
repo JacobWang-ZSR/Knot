@@ -15,6 +15,8 @@ test('password block titles navigate to their address when clicked', () => {
   assert.match(appScript, /function getPasswordAddress\(pwd\)/);
   assert.match(appScript, /data-navigate-address="\$\{escapeHtml\(getPasswordAddress\(pwd\)\)\}"/);
   assert.match(appScript, /function navigateToAddress\(address\)/);
+  assert.match(appScript, /window\.open\(url, '_blank', 'noopener'\)/);
+  assert.doesNotMatch(appScript, /window\.location\.href/);
   assert.match(appScript, /passwordsContainer\.addEventListener\('click'[\s\S]*closest\('\[data-navigate-address\]'\)[\s\S]*navigateToAddress\([^)]+\.dataset\.navigateAddress\)/);
   assert.doesNotMatch(appScript, /navigateToAddress\(block\.dataset\.address\)/);
 });

@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!target) return;
 
     const hasScheme = /^[a-z][a-z\d+\-.]*:/i.test(target);
-    window.location.href = hasScheme ? target : `https://${target}`;
+    const url = hasScheme ? target : `https://${target}`;
+    window.open(url, '_blank', 'noopener');
   }
 
   function showToast(message) {
