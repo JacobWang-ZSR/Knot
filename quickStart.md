@@ -39,6 +39,7 @@ $pid = (netstat -ano | Select-String ':8081' | Select-String 'LISTENING' | ForEa
 git push local main
 git push github main
 
+cd /vol1/1001/TempOnSSD/RopeNod
 sudo docker compose up --build -d
 
 $pid = (netstat -ano | Select-String ':8081' | Select-String 'LISTENING' | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1); if ($pid) { Stop-Process -Id $pid -Force }; node src/app.js
