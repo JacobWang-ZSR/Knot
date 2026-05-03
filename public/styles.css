@@ -339,6 +339,16 @@ main {
   overflow-wrap: anywhere;
 }
 
+.target-name[data-navigate-address]:not([data-navigate-address=""]) {
+  cursor: pointer;
+}
+
+.target-name[data-navigate-address]:not([data-navigate-address=""]):hover,
+.target-name[data-navigate-address]:not([data-navigate-address=""]):focus {
+  color: var(--accent-strong);
+  outline: none;
+}
+
 .card-actions {
   display: flex;
   flex-shrink: 0;

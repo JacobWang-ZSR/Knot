@@ -54,6 +54,18 @@ document.addEventListener('DOMContentLoaded', () => {
     return `<span class="copy-value" data-copy="${safeValue}" title="Click to copy" tabindex="0" role="button">${safeValue}</span>`;
   }
 
+  function getPasswordAddress(pwd) {
+    return String(pwd?.address || pwd?.targetUrl || '').trim();
+  }
+
+  function navigateToAddress(address) {
+    const target = String(address || '').trim();
+    if (!target) return;
+
+    const hasScheme = /^[a-z][a-z\d+\-.]*:/i.test(target);
+    window.location.href = hasScheme ? target : `https://${target}`;
+  }
+
   function showToast(message) {
     let toast = document.getElementById('copy-toast');
     if (!toast) {
@@ -301,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = `
         <div class="password-block-top">
           <div class="top-content">
-            <p class="target-name copy-value" data-copy="${escapeHtml(pwd.targetName)}" title="Click to copy" tabindex="0" role="button">${escapeHtml(pwd.targetName)}</p>
+            <p class="target-name" data-navigate-address="${escapeHtml(getPasswordAddress(pwd))}" title="Open address" tabindex="0" role="link">${escapeHtml(pwd.targetName)}</p>
             <div class="card-actions">
               <button class="edit-btn" data-index="${originalIndex}" aria-label="Edit password">
                 <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -477,6 +489,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   passwordsContainer.addEventListener('click', async (e) => {
+    const titleLink = e.target.closest('[data-navigate-address]');
+    if (titleLink) {
+      navigateToAddress(titleLink.dataset.navigateAddress);
+      return;
+    }
+
     const target = e.target.closest('.copy-value');
     if (!target) return;
 
@@ -491,6 +509,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   passwordsContainer.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
+
+    const titleLink = e.target.closest('[data-navigate-address]');
+    if (titleLink) {
+      e.preventDefault();
+      navigateToAddress(titleLink.dataset.navigateAddress);
+      return;
+    }
 
     const target = e.target.closest('.copy-value');
     if (!target) return;

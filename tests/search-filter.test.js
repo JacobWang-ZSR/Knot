@@ -10,3 +10,11 @@ test('password refreshes render through the active search filter', () => {
   assert.match(appScript, /async function loadPasswords\(\)[\s\S]*renderFilteredPasswords\(\)/);
   assert.doesNotMatch(appScript, /async function loadPasswords\(\)[\s\S]*renderPasswords\(\);/);
 });
+
+test('password block titles navigate to their address when clicked', () => {
+  assert.match(appScript, /function getPasswordAddress\(pwd\)/);
+  assert.match(appScript, /data-navigate-address="\$\{escapeHtml\(getPasswordAddress\(pwd\)\)\}"/);
+  assert.match(appScript, /function navigateToAddress\(address\)/);
+  assert.match(appScript, /passwordsContainer\.addEventListener\('click'[\s\S]*closest\('\[data-navigate-address\]'\)[\s\S]*navigateToAddress\([^)]+\.dataset\.navigateAddress\)/);
+  assert.doesNotMatch(appScript, /navigateToAddress\(block\.dataset\.address\)/);
+});
